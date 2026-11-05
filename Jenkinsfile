@@ -44,6 +44,13 @@ pipeline {
                         allowEmptyResults: false
                     )
                 }
+
+                success {
+                    archiveArtifacts(
+                        artifacts: '**/target/*.jar',
+                        fingerprint: true
+                    )
+                }
             }
         }
 
@@ -71,10 +78,6 @@ pipeline {
     post {
         success {
             echo 'Warehouse application CI build successful!'
-            archiveArtifacts(
-            artifacts: '**/target/*.jar',
-            fingerprint: true
-        )
         }
 
         failure {
