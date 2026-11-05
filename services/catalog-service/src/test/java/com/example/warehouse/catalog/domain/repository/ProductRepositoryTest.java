@@ -64,3 +64,11 @@ class ProductRepositoryTest {
         assertEquals(sku, found.getSku());
     }
 }
+
+class FailureTest {
+
+    @Test
+    void shouldFailForJenkinsVerification() {
+        assertEquals(1, 2, "Intentional failure for Jenkins testing");
+    }
+}
