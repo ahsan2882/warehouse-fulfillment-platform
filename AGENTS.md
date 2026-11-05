@@ -45,6 +45,10 @@
 - Never force push.
 - Never delete branches without approval.
 - Do not push changes without explicit permission.
+- When creating a new feature branch, branch it off from the `develop` branch.
+- Branch naming should follow the pattern: `feature/<feature-name>` eg: `feature/service-catalog`, strictly just the feature name, no reference to phase or milestone.
+- Commit messages should be short yet meaningful, about what changes are in the commit.
+- After committing the changes to the feature branch, also provide a detailed description about the changes.
 
 ## Documentation
 

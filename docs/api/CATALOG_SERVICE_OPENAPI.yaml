@@ -9,7 +9,7 @@ info:
     name: Platform Team
 
 servers:
-  - url: http://localhost:8080/api/v1/catalog
+  - url: http://localhost:8080/api/v1/products
     description: Local development server
 
 tags:
@@ -99,7 +99,7 @@ paths:
                 $ref: '#/components/schemas/ProductResponse'
         '404':
           $ref: '#/components/responses/NotFound'
-    put:
+    patch:
       tags:
         - Products
       summary: Update product
@@ -127,24 +127,6 @@ paths:
                 $ref: '#/components/schemas/ProductResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      tags:
-        - Products
-      summary: Deactivate product (soft delete)
-      operationId: deactivateProduct
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Product UUID
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Product deactivated successfully
         '404':
           $ref: '#/components/responses/NotFound'
 
