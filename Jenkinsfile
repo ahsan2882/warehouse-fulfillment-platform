@@ -55,6 +55,8 @@ pipeline {
             steps {
                 echo 'Running verification on Agent 02'
 
+                checkout scm
+
                 sh '''
                     echo "Agent: $(hostname)"
                     echo "User: $(whoami)"
