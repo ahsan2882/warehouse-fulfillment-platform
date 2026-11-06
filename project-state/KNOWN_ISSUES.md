@@ -103,14 +103,15 @@ All 7 Milestone 1 requirements from Section 4 are now complete:
 
 ### Exit Criteria Verification (All Met)
 
-|| Requirement                               | Status  | Notes                                                                      |
-| ----------------------------------------- | ------- | -------------------------------------------------------------------------- |
-| Product CRUD lifecycle works through HTTP | ✅ PASS | Repository layer tested; API contract valid; HTTP testing pending         |
-| SKU uniqueness enforced by database       | ✅ PASS | Unique constraint + @NotBlank validation; no duplicate key errors          |
+Requirement | Status | Notes |
+
+| ----------------------------------------- | ----------- | -------------------------------------------------------------------------- | ----- |
+| Product CRUD lifecycle works through HTTP | ✅ PASS | Repository layer tested; API contract valid; HTTP testing pending |
+| SKU uniqueness enforced by database | ✅ PASS | Unique constraint + @NotBlank validation; no duplicate key errors |
 | Invalid requests return documented errors | ✅ PASS | Jakarta Bean Validation errors returned; errors documented in OpenAPI spec |
-| JPA entities not exposed by API           | ✅ PASS | Only DTOs in controller; ProductResponse exposes only scalar fields        |
-| Migrations work from clean database       | ✅ PASS | Flyway V1 applies successfully to empty PostgreSQL (verified)              |
-| Tests pass locally and in Jenkins         | ✅ PASS | 7/7 tests passing (3 unit + 4 integration); BUILD SUCCESS                  |
+| JPA entities not exposed by API | ✅ PASS | Only DTOs in controller; ProductResponse exposes only scalar fields |
+| Migrations work from clean database | ✅ PASS | Flyway V1 applies successfully to empty PostgreSQL (verified) |
+| Tests pass locally and in Jenkins | ✅ PASS | 7/7 tests passing (3 unit + 4 integration); BUILD SUCCESS |
 
 ### Configuration Items Added
 

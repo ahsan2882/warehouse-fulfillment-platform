@@ -73,7 +73,7 @@
 
 #### Configuration ✅
 
-- `application.properties` — minimal base configuration  
+- `application.properties` — minimal base configuration
 - `application-local.properties` — PostgreSQL connection with **Flyway enabled**, Flyway config + validate DDL
 - `application-test.properties` — H2 in-memory with dynamic property sources
 
@@ -81,14 +81,14 @@
 
 ## Exit Criteria Verification ✅
 
-| Requirement                    | Status  | Notes                                        |
-| ------------------------------ | ------- | -------------------------------------------- |
-| Product CRUD works via HTTP    | ✅ PASS | All 4 operations tested and working          |
-| SKU uniqueness enforced        | ✅ PASS | DB constraint + @NotBlank validation         |
-| Invalid requests return errors | ✅ PASS | Jakarta Bean Validation errors returned      |
-| JPA entities not exposed       | ✅ PASS | Only DTOs in controller, no @Entity exposure |
+| Requirement                    | Status  | Notes                                                                                    |
+| ------------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| Product CRUD works via HTTP    | ✅ PASS | All 4 operations tested and working                                                      |
+| SKU uniqueness enforced        | ✅ PASS | DB constraint + @NotBlank validation                                                     |
+| Invalid requests return errors | ✅ PASS | Jakarta Bean Validation errors returned                                                  |
+| JPA entities not exposed       | ✅ PASS | Only DTOs in controller, no @Entity exposure                                             |
 | Migrations work from clean DB  | ✅ PASS | Flyway V1 migration exists and applies successfully (spring-boot-starter-flyway enabled) |
-| Tests pass locally             | ✅ PASS | 7/7 tests green, BUILD SUCCESS               |
+| Tests pass locally             | ✅ PASS | 7/7 tests green, BUILD SUCCESS                                                           |
 
 ---
 
@@ -146,15 +146,19 @@
 ### PR Comments Fixed on feature/catalog-service → develop:
 
 1. **H2 Database URL Stability** — `TESTDB_URL` now uses timestamp-based unique ID (`System.currentTimeMillis() + Thread.currentThread().getId()`) stored in static final field, ensuring the supplier returns a stable URL per class load.
-   
-2. **Test Isolation for Count Assertions** — Added `repository.deleteAll()` at start of `should_find_all_active_products()` since JUnit doesn't guarantee source-order execution and unique SKUs don't prevent count assertions from failing when other tests insert products to the same shared H2 DB.
+
+2. **@DynamicPropertySource Fix** — Added `@DynamicPropertySource` annotation to `configureDb()` method to properly register dynamic datasource properties with Spring Boot test framework for reliable test isolation.
+
+3. **Test Isolation for Count Assertions** — Added `repository.deleteAll()` at start of `should_find_all_active_products()` since JUnit doesn't guarantee source-order execution and unique SKUs don't prevent count assertions from failing when other tests insert products to the same shared H2 DB.
 
 ### Build Status: ✅ PASSING
+
 - **Unit Tests:** 3/3 passing (ProductRepositoryTest)
 - **Integration Tests:** 4/4 passing (CatalogServiceIntegrationTests)
 - **Total:** 7/7 tests green, BUILD SUCCESS
 
 ### Files Modified for PR Review Fixes:
+
 - `services/catalog-service/src/test/java/com/example/warehouse/catalog/presentation/rest/controller/CatalogServiceIntegrationTests.java`
 
 ---

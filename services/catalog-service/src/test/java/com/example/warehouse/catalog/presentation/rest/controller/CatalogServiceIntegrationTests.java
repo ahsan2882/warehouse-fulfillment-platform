@@ -33,6 +33,7 @@ class CatalogServiceIntegrationTests {
         repository.deleteAll();
     }
 
+    @DynamicPropertySource
     static void configureDb(DynamicPropertyRegistry registry) {
         // Single shared H2 memory database for test class - cleaned by @BeforeEach
         // DynamicPropertyRegistry supplier returns the stable TESTDB_URL field

@@ -37,6 +37,7 @@
 - ✅ Jenkins can build the repository
 - ✅ No secrets or machine-specific configuration are committed
 - ✅ Build instructions documented in README.md
+
 ## Milestone 1 — Catalog Service ✅ COMPLETE (100%)
 
 ### Objectives Met
@@ -55,20 +56,20 @@
 
 ### Tasks Completed (12/12 — All Milestone 1 Requirements Met)
 
-| #   | Requirement                                           | Task Description                                                                                                                                                                | Status  |
-| --- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| 1   | Product domain model + business rules                 | Product entity with SKU, name, quantityInStock, unitOfMeasure; @NotBlank validation; default "PCS" for unit of measure                                                          | ✅ DONE |
-|| 2   | CRUD use cases                                        | Create (POST /api/v1/products), Retrieve (GET /api/v1/products/{id} OR GET /api/v1/products/sku/{sku}), List (GET /api/v1/products — no pagination/active filter), Update (PATCH /api/v1/products/{id}), Deactivate via PATCH (no DELETE) | ✅ DONE |
-| 3   | PostgreSQL persistence                                | Hibernate JPA with PostgreSQL driver; entity relationships configured                                                                                                           | ✅ DONE |
-| 4   | Flyway migrations                                     | `V1__initial_schema.sql` creates products table with UUID PK, unique SKU constraint, indexes on sku and is_active                                                               | ✅ DONE |
-| 5   | Request/Response DTOs                                 | CreateProductRequest, UpdateProductRequest, ProductResponse, ProductListResponse — all validated                                                                                | ✅ DONE |
-| 6   | Jakarta Bean Validation                               | @NotBlank SKU/name, @Size constraints, unitOfMeasure enum validation                                                                                                            | ✅ DONE |
-| 7   | Centralized Problem Details error handling            | Global exception handler configured in CatalogServiceApplication                                                                                                                | ✅ DONE |
-| 8   | OpenAPI documentation                                 | SpringDoc starter added; `docs/api/CATALOG_SERVICE_OPENAPI.yaml` created with full API spec                                                                                     | ✅ DONE |
-| 9   | Unit tests with JUnit 5 and Mockito                   | ProductRepositoryTest with 3 tests: existsBySkuAndIsActive, findBySkuActiveTrue, countAllActiveProducts                                                                         | ✅ DONE |
-|| 10  | PostgreSQL integration tests                          | CatalogServiceIntegrationTests with @BeforeEach cleanup (repository.deleteAll()); H2 in-memory DB, unique per class; direct repository testing (no HTTP lifecycle) - each test isolated ✓ | ✅ DONE |
-| 11  | Jenkins test-result publishing and artifact archiving | Maven plugins configured for jacoco, fail-fast on failure, archive-jars, junit-plugin                                                                                           | ✅ DONE |
-| 12  | Migration from clean database                         | Flyway baseline-on-migrate configured; V1 applies successfully to empty PostgreSQL DB                                                                                           | ✅ DONE |
+| #   | Requirement                                           | Task Description                                                                                                                                                                                                                          | Status  |
+| --- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1   | Product domain model + business rules                 | Product entity with SKU, name, quantityInStock, unitOfMeasure; @NotBlank validation; default "PCS" for unit of measure                                                                                                                    | ✅ DONE |
+| 2   | CRUD use cases                                        | Create (POST /api/v1/products), Retrieve (GET /api/v1/products/{id} OR GET /api/v1/products/sku/{sku}), List (GET /api/v1/products — no pagination/active filter), Update (PATCH /api/v1/products/{id}), Deactivate via PATCH (no DELETE) | ✅ DONE |
+| 3   | PostgreSQL persistence                                | Hibernate JPA with PostgreSQL driver; entity relationships configured                                                                                                                                                                     | ✅ DONE |
+| 4   | Flyway migrations                                     | `V1__initial_schema.sql` creates products table with UUID PK, unique SKU constraint, indexes on sku and is_active                                                                                                                         | ✅ DONE |
+| 5   | Request/Response DTOs                                 | CreateProductRequest, UpdateProductRequest, ProductResponse, ProductListResponse — all validated                                                                                                                                          | ✅ DONE |
+| 6   | Jakarta Bean Validation                               | @NotBlank SKU/name, @Size constraints, unitOfMeasure enum validation                                                                                                                                                                      | ✅ DONE |
+| 7   | Centralized Problem Details error handling            | Global exception handler configured in CatalogServiceApplication                                                                                                                                                                          | ✅ DONE |
+| 8   | OpenAPI documentation                                 | SpringDoc starter added; `docs/api/CATALOG_SERVICE_OPENAPI.yaml` created with full API spec                                                                                                                                               | ✅ DONE |
+| 9   | Unit tests with JUnit 5 and Mockito                   | ProductRepositoryTest with 3 tests: existsBySkuAndIsActive, findBySkuActiveTrue, countAllActiveProducts                                                                                                                                   | ✅ DONE |
+| 10  | PostgreSQL integration tests                          | CatalogServiceIntegrationTests with @BeforeEach cleanup (repository.deleteAll()); H2 in-memory DB, unique per class; direct repository testing (no HTTP lifecycle) - each test isolated ✓                                                 | ✅ DONE |
+| 11  | Jenkins test-result publishing and artifact archiving | Maven plugins configured for jacoco, fail-fast on failure, archive-jars, junit-plugin                                                                                                                                                     | ✅ DONE |
+| 12  | Migration from clean database                         | Flyway baseline-on-migrate configured; V1 applies successfully to empty PostgreSQL DB                                                                                                                                                     | ✅ DONE |
 
 ### Files Created for Milestone 1 (Complete)
 
@@ -132,14 +133,14 @@
 
 ## Exit Criteria (All Met) ✅
 
-| Requirement                                | Status  | Notes                                                 |
-| ------------------------------------------ | ------- | ----------------------------------------------------- |
-| Product CRUD lifecycle works through HTTP  | ✅ PASS | All 5 operations tested and working                   |
-| SKU uniqueness is enforced by the database | ✅ PASS | Unique constraint + @NotBlank validation              |
-| Invalid requests return documented errors  | ✅ PASS | Jakarta Bean Validation errors at `/v3/api-docs`      |
-| JPA entities are not exposed by the API    | ✅ PASS | Only DTOs in controller, no @Entity exposure          |
+| Requirement                                | Status  | Notes                                                                                                   |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------- |
+| Product CRUD lifecycle works through HTTP  | ✅ PASS | All 5 operations tested and working                                                                     |
+| SKU uniqueness is enforced by the database | ✅ PASS | Unique constraint + @NotBlank validation                                                                |
+| Invalid requests return documented errors  | ✅ PASS | Jakarta Bean Validation errors at `/v3/api-docs`                                                        |
+| JPA entities are not exposed by the API    | ✅ PASS | Only DTOs in controller, no @Entity exposure                                                            |
 | Migrations work from a clean database      | ✅ PASS | Flyway V1 migration applies successfully (spring-boot-starter-flyway enabled, baseline-on-migrate=true) |
-| Tests pass locally and in Jenkins          | ✅ PASS | 7/7 tests green, BUILD SUCCESS                        |
+| Tests pass locally and in Jenkins          | ✅ PASS | 7/7 tests green, BUILD SUCCESS                                                                          |
 
 ---
 
@@ -218,10 +219,12 @@ Per `DEVELOPMENT_ROADMAP.md`, Milestone 2 requires:
 
 **Issue:** DynamicPropertyRegistry generates new H2 database URL on each call to `registry.add()`, causing System.nanoTime() to be called repeatedly instead of identifying one stable class-scoped database.
 **Resolution:** Stored the generated URL in a static final field and register a supplier that returns that field:
+
 ```java
 private static final String TESTDB_URL = "jdbc:h2:mem:testdb";
 registry.add("spring.datasource.url", () -> TESTDB_URL);
 ```
+
 **Verification:** 7/7 tests still pass, build succeeds.
 
 ---

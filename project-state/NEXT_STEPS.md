@@ -179,7 +179,7 @@ Update root `Jenkinsfile` to include catalog-service builds in multi-module pipe
 
 ## Exit Criteria for Milestone 2 (Inventory Service Basics)
 
-Before marking Milestone 2 complete:
+Before marking Milestone 2 complete, ensure all roadmap criteria below are implemented with their corresponding implementation steps added to the implementation checklist before using this checklist as the completion gate:
 
 ### ✅ Implementation Steps (Roadmap)
 
@@ -242,6 +242,7 @@ Before marking current session complete:
 ### PR Review Fixes Applied (codeRabbitAI comments):
 
 1. **H2 Database URL Stability** — Changed from `System.nanoTime()` to timestamp-based unique ID stored in static final field:
+
    ```java
    private static final String TESTDB_URL = "jdbc:h2:mem:testdb-" + System.currentTimeMillis() + "-" + Thread.currentThread().getId();
    ```
