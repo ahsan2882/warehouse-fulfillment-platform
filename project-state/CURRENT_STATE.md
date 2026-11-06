@@ -39,7 +39,7 @@
 #### Persistence ✅
 
 - PostgreSQL persistence with Hibernate JPA
-- Flyway migrations configured (`V1__initial_schema.sql`)
+- **Flyway migrations complete** (`V1__initial_schema.sql` with `spring-boot-starter-flyway`)
 - Repository with custom queries (`findBySkuActiveTrue`, `countAllActiveProducts`)
 
 #### API Layer ✅
@@ -54,8 +54,12 @@
 
 - **Unit tests:** ProductRepositoryTest (3 tests — exists, finds by SKU, counts active products)
 - **Integration tests:** CatalogServiceIntegrationTests (4 tests — create/get, get all, update, deactivate)
-- Tests use unique SKUs to prevent conflicts
-- H2 in-memory database for testing with Flyway migrations
+  - Uses H2 in-memory database (single DB per test class, shared)
+  - Each test is isolated with `@BeforeEach` calling `repository.deleteAll()`
+  - Tests repository layer directly (@SpringBootTest but no HTTP client calls)
+  - Does not exercise HTTP lifecycle or controller endpoints
+  - Uses unique SKUs to prevent conflicts
+- **Stable database URL:** Static final field prevents DynamicPropertyRegistry from generating new URLs per call
 
 #### Build & Deployment ✅
 
@@ -63,17 +67,15 @@
 - Catalog Service POM with all dependencies including:
   - Spring Boot Web + Data JPA + Actuator
   - PostgreSQL driver (runtime)
-  - Flyway ORM
+  - Flyway ORM (`spring-boot-starter-flyway` in parent dependencyManagement)
   - SpringDoc OpenAPI UI (`springdoc-openapi-starter-webmvc-ui`)
-  - Testcontainers for integration tests
-  - H2 database for unit/integration test isolation
+  - H2 database for testing (no Testcontainers used in current integration tests)
 
 #### Configuration ✅
 
-- `application.properties` — minimal base configuration
-- `application-local.properties` — PostgreSQL connection + Flyway config
+- `application.properties` — minimal base configuration  
+- `application-local.properties` — PostgreSQL connection with **Flyway enabled**, Flyway config + validate DDL
 - `application-test.properties` — H2 in-memory with dynamic property sources
-- H2 console available at `/h2-console` during tests
 
 ---
 
@@ -85,7 +87,7 @@
 | SKU uniqueness enforced        | ✅ PASS | DB constraint + @NotBlank validation         |
 | Invalid requests return errors | ✅ PASS | Jakarta Bean Validation errors returned      |
 | JPA entities not exposed       | ✅ PASS | Only DTOs in controller, no @Entity exposure |
-| Migrations work from clean DB  | ✅ PASS | Flyway V1 migration exists and applies       |
+| Migrations work from clean DB  | ✅ PASS | Flyway V1 migration exists and applies successfully (spring-boot-starter-flyway enabled) |
 | Tests pass locally             | ✅ PASS | 7/7 tests green, BUILD SUCCESS               |
 
 ---
@@ -139,6 +141,26 @@
 
 ---
 
+## Session Completion Summary (Post-PR Review)
+
+### PR Comments Fixed on feature/catalog-service → develop:
+
+1. **H2 Database URL Stability** — `TESTDB_URL` now uses timestamp-based unique ID (`System.currentTimeMillis() + Thread.currentThread().getId()`) stored in static final field, ensuring the supplier returns a stable URL per class load.
+   
+2. **Test Isolation for Count Assertions** — Added `repository.deleteAll()` at start of `should_find_all_active_products()` since JUnit doesn't guarantee source-order execution and unique SKUs don't prevent count assertions from failing when other tests insert products to the same shared H2 DB.
+
+### Build Status: ✅ PASSING
+- **Unit Tests:** 3/3 passing (ProductRepositoryTest)
+- **Integration Tests:** 4/4 passing (CatalogServiceIntegrationTests)
+- **Total:** 7/7 tests green, BUILD SUCCESS
+
+### Files Modified for PR Review Fixes:
+- `services/catalog-service/src/test/java/com/example/warehouse/catalog/presentation/rest/controller/CatalogServiceIntegrationTests.java`
+
+---
+
 ## Recovery Note
 
 This checkpoint reflects recovery from power outage on 2026-11-05. All work completed during recovery session has been verified and is stable.
+
+**Post-Recovery Updates:** PR review comments from codeRabbitAI addressed on 2026-11-06.

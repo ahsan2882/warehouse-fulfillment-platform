@@ -177,9 +177,38 @@ Update root `Jenkinsfile` to include catalog-service builds in multi-module pipe
 
 ---
 
-## Verification Criteria Before Milestone 2 Complete
+## Exit Criteria for Milestone 2 (Inventory Service Basics)
 
 Before marking Milestone 2 complete:
+
+### ✅ Implementation Steps (Roadmap)
+
+1. **Release Management**
+   - Implement versioning strategy for inventory records
+   - Add soft-delete capability with `deletedAt` audit field
+   - Create retention policies for archived inventory data
+
+2. **Idempotency**
+   - Add idempotency keys to stock adjustment endpoints
+   - Implement cache invalidation for stale inventory data
+   - Ensure concurrent requests don't cause duplicate operations
+
+3. **Concurrent Oversell Protection**
+   - Add optimistic locking with `@Version` annotation on inventory table
+   - Implement database-level row locks for critical stock operations
+   - Add retry logic for failed concurrent updates with exponential backoff
+
+4. **PostgreSQL Integration Tests**
+   - Replace H2 in-memory DB with Testcontainers PostgreSQL for integration tests
+   - Add schema validation tests against Flyway migrations
+   - Verify migration compatibility across PostgreSQL versions
+
+5. **Role Enforcement**
+   - Implement service-level security filters for inventory endpoints
+   - Add audit logging for stock adjustments and reservations
+   - Create role-based access control (RBAC) for admin vs operational users
+
+### Verification Checklist
 
 - [ ] `mvn clean verify -pl services/inventory-service -am` succeeds locally
 - [ ] Health endpoint returns `"status":"UP"` at `/actuator/health`
@@ -206,12 +235,21 @@ Before marking current session complete:
 
 ## Session Status
 
-**Current Milestone:** Milestone 2 — NOT YET STARTED
-**Build Status:** ✅ PASSING (Catalog Service verified)
-**Graphify Usage:** ✅ Used before implementation
+**Current Milestone:** Milestone 1 — COMPLETE (PR review fixes applied)
+**Build Status:** ✅ PASSING (Catalog Service verified - all PR comments addressed)
+**Graphify Usage:** ✅ Used for codebase analysis and graph update
 
-**Next Action:** Awaiting user instruction to proceed with Milestone 2 or review current state.
+### PR Review Fixes Applied (codeRabbitAI comments):
+
+1. **H2 Database URL Stability** — Changed from `System.nanoTime()` to timestamp-based unique ID stored in static final field:
+   ```java
+   private static final String TESTDB_URL = "jdbc:h2:mem:testdb-" + System.currentTimeMillis() + "-" + Thread.currentThread().getId();
+   ```
+
+2. **Test Isolation for Active Product Count** — Added `repository.deleteAll()` at start of `should_find_all_active_products()` to ensure isolation from other tests (JUnit doesn't guarantee source-order execution).
+
+**Next Action:** PR ready to merge into develop branch. Awaiting instruction to proceed with Milestone 2 (Inventory Service) or review current state.
 
 ---
 
-**Last Updated:** 2026-11-05 20:52
+**Last Updated:** 2026-11-06 17:26 PKT

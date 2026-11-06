@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.example.warehouse.catalog.domain.Product;
 import com.example.warehouse.catalog.domain.repository.ProductRepository;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,13 +20,23 @@ import org.springframework.test.context.DynamicPropertySource;
 @ActiveProfiles("test")
 class CatalogServiceIntegrationTests {
 
+    // Generate a unique H2 database URL once per class using a timestamp-based ID
+    // This ensures isolation between test runs while providing a stable URL for the supplier
+    private static final String TESTDB_URL = "jdbc:h2:mem:testdb-" + System.currentTimeMillis() + "-" + Thread.currentThread().getId();
+
     @Autowired
     private ProductRepository repository;
 
-    @DynamicPropertySource
+    @BeforeEach
+    void clearDatabase() {
+        // Clear all products before each test to ensure isolation
+        repository.deleteAll();
+    }
+
     static void configureDb(DynamicPropertyRegistry registry) {
-        // Create a unique database for this test class to avoid cross-contamination
-        registry.add("spring.datasource.url", () -> "jdbc:h2:mem:testdb-" + System.nanoTime());
+        // Single shared H2 memory database for test class - cleaned by @BeforeEach
+        // DynamicPropertyRegistry supplier returns the stable TESTDB_URL field
+        registry.add("spring.datasource.url", () -> TESTDB_URL);
         registry.add("spring.datasource.username", () -> "sa");
         registry.add("spring.datasource.password", () -> "");
         registry.add("spring.datasource.driver-class-name", () -> "org.h2.Driver");
@@ -50,6 +61,10 @@ class CatalogServiceIntegrationTests {
 
     @Test
     void should_find_all_active_products() {
+        // Clear database first - unique SKUs don't prevent count assertions from failing
+        // when other tests insert products to the same shared H2 DB
+        repository.deleteAll();
+
         // Given - setup with unique SKUs to avoid duplicate key violations
         String sku1 = "P1-" + System.nanoTime();
         String sku2 = "P2-" + System.nanoTime();

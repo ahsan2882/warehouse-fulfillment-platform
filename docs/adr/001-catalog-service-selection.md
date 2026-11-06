@@ -23,9 +23,11 @@ The **Catalog Service** is selected as the first vertical slice implementation b
 
 ### Architecture Implications
 
-- Catalog service runs on its own PostgreSQL database instance
+- **Catalog owns its database or schema** per the database ownership principle (ARCHITECTURE.md)
+- Local development: multiple services may share a single PostgreSQL server, each with its own separate database/schema and user
+- Production: services maintain strict boundaries via separate databases/schemas or connection pooling to isolated schemas
 - Other services (Inventory, Order, etc.) communicate via REST API calls
-- No shared database schemas between services
+- No shared database schemas between services in production
 
 ### Implementation Implications
 
