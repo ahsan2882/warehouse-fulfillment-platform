@@ -8,25 +8,7 @@ pipeline {
         skipDefaultCheckout()
     }
 
-    environment {
-        APP_NAME = 'catalog-service'
-    }
-
     stages {
-
-        stage('Checkout') {
-            agent {
-                label 'general'
-            }
-
-            steps {
-                checkout scm
-
-                echo "Building ${APP_NAME}"
-                sh 'java -version'
-                sh 'mvn -version'
-            }
-        }
 
         stage('Build') {
             agent {
@@ -34,7 +16,27 @@ pipeline {
             }
 
             steps {
-                sh 'mvn -B clean package'
+
+                // Checkout source on Agent 01
+                checkout scm
+
+                sh '''
+                    echo "Agent: $(hostname)"
+                    echo "User: $(whoami)"
+
+                    java -version
+                    mvn -version
+
+                    mvn -B clean package
+                '''
+
+                // Transfer generated JAR files to other agents
+                stash(
+                    name: 'catalog-jar',
+                    includes: '**/target/*.jar'
+                )
+
+                echo 'JAR files successfully stashed.'
             }
 
             post {
@@ -60,17 +62,46 @@ pipeline {
             }
 
             steps {
-                echo 'Running verification on Agent 02'
+                echo 'Receiving build artifact on Agent 02'
 
-                checkout scm
+                // Retrieve artifact from Agent 01
+                unstash 'catalog-jar'
 
                 sh '''
                     echo "Agent: $(hostname)"
                     echo "User: $(whoami)"
 
-                    mvn -version
-                    mvn -B clean verify
+                    echo "Java version:"
+                    java -version
+
+                    echo "Received JAR files:"
+
+                    find . -type f -path '*/target/*.jar' -print
+
+                    echo "Verifying JAR files..."
+
+                    JAR_FILES=$(find . -type f -path '*/target/*.jar')
+
+                    if [ -z "$JAR_FILES" ]; then
+                        echo "ERROR: No JAR files received."
+                        exit 1
+                    fi
+
+                    while IFS= read -r jar; do
+                        echo "Checking: $jar"
+
+                        sha256sum "$jar"
+
+                        # Validate JAR archive structure
+                        jar tf "$jar" > /dev/null
+
+                        echo "JAR validation passed: $jar"
+                    done <<EOF
+                    $JAR_FILES
+                    EOF
                 '''
+
+                echo 'Artifact verification completed successfully.'
             }
         }
     }
