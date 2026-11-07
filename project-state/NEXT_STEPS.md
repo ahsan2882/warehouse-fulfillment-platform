@@ -1,46 +1,43 @@
 # Next Steps - Warehouse Fulfillment Platform
 
-## ✅ Completed: Milestone 0 (Environment & Repository Foundation)
+## ✅ Completed: Milestones 0 & 1
+
+### Milestone 0 (Environment & Repository Foundation) — COMPLETE ✅
 
 All deliverables implemented and verified. See `project-state/CURRENT_STATE.md` for full summary.
 
+### Milestone 1 (Catalog Service Business Logic) — COMPLETE ✅
+
+Integration test skeleton fixed, all tests passing:
+
+- ✅ CatalogServiceIntegrationTests.java rewritten with proper @SpringBootTest setup
+- ✅ Unique SKUs per test to avoid duplicate key violations
+- ✅ DynamicPropertySource for unique H2 database per test class
+- ✅ All 7 tests passing (3 unit + 4 integration)
+- ✅ Build verification: `mvn clean verify` → BUILD SUCCESS
+
 ---
 
-## Milestone 1: Catalog Service Business Logic (Next Phase)
+## Milestone 2: Inventory Service Basics (Next Phase)
 
-#### Step 1.1: Create Directories
+### Overview
+
+Implement the Inventory Service domain service for stock management, building on the Catalog Service foundation.
+
+### Step 2.1: Create Directories
 
 ```bash
-mkdir -p services/catalog-service/src/main/java/com/example/warehouse/catalog/domain
-mkdir -p services/catalog-service/src/main/java/com/example/warehouse/catalog/presentation/rest/controller
-mkdir -p services/catalog-service/src/main/java/com/example/warehouse/catalog/presentation/rest/request
-mkdir -p services/catalog-service/src/main/java/com/example/warehouse/catalog/presentation/rest/response
-mkdir -p services/catalog-service/src/main/java/com/example/warehouse/catalog/application/service
-mkdir -p services/catalog-service/src/main/java/com/example/warehouse/catalog/domain/repository
-mkdir -p services/catalog-service/src/main/resources/db/migration
-mkdir -p services/catalog-service/src/test/java/com/example/warehouse/catalog/domain
-mkdir -p services/catalog-service/src/test/java/com/example/warehouse/catalog/presentation/rest/controller
-mkdir -p services/catalog-service/src/test/resources
-mkdir -p docs/adr
+mkdir -p services/inventory-service/src/main/java/com/example/warehouse/inventory/domain
+mkdir -p services/inventory-service/src/main/java/com/example/warehouse/inventory/presentation/rest/controller
+mkdir -p services/inventory-service/src/main/java/com/example/warehouse/inventory/presentation/rest/request
+mkdir -p services/inventory-service/src/main/java/com/example/warehouse/inventory/presentation/rest/response
+mkdir -p services/inventory-service/src/main/java/com/example/warehouse/inventory/application/service
+mkdir -p services/inventory-service/src/main/java/com/example/warehouse/inventory/domain/repository
+mkdir -p services/inventory-service/src/test/java/com/example/warehouse/inventory/domain
+mkdir -p services/inventory-service/src/test/resources
 ```
 
-#### Step 1.2: Create Root `pom.xml`
-
-- Configure Java 21 properties
-- Add Spring Boot BOM for dependency management
-- Configure Maven compiler, Surefire, and Spring Boot plugins
-
-#### Step 1.3: Update `.gitignore`
-
-Add missing patterns:
-
-- IDE configurations (`.idea/`, `.vscode/`) - already present but verify
-- Maven wrapper directory (`.mvn/wrapper/`)
-- IntelliJ workspace files
-
-### Phase 2: Implement Catalog Service Basics
-
-#### Step 2.1: Create `catalog-service/pom.xml`
+### Step 2.2: Create `services/inventory-service/pom.xml`
 
 - Spring Boot Web starter
 - Spring Data JPA starter
@@ -49,159 +46,211 @@ Add missing patterns:
 - OpenAPI/springdoc dependency
 - Test dependencies (Spring Boot Test, JUnit 5, Mockito)
 
-#### Step 2.2: Create Product Domain Model
+### Step 2.3: Create Inventory Domain Model
 
-- `Product.java` - Entity with UUID PK, SKU, name, description, unitOfMeasure, active flag
-- `ProductId.java` or use UUID directly for ID
-- Add JPA annotations (`@Entity`, `@Table`, `@Id`, `@GeneratedValue`)
-- Add audit fields (`@CreatedDate` mapped to `created_at`)
+**`Inventory.java`** - Core entity with:
 
-#### Step 2.3: Create Product Repository
+- UUID PK for inventory record
+- SKU reference (to Catalog Service products)
+- Quantity on hand (NUMERIC type for precision)
+- Reserved quantity
+- Available quantity (computed or denormalized)
+- Low stock threshold
+- updatedAt audit field
 
-- `ProductRepository.java` extends `JpaRepository<Product, UUID>`
-- Add custom method for active product listing (optional)
+**`StockKeepingUnit.java`** - Entity representing unique SKUs in inventory:
 
-#### Step 2.4: Create DTOs
+- UUID PK
+- SKU code (unique, references Catalog product)
+- Reorder point
+- Unit of measure
+- Warehouse location (optional)
 
-- `CreateProductRequest.java` - Request DTO with validation annotations
-- `UpdateProductRequest.java` - Partial update request DTO
-- `ProductResponse.java` - Response DTO exposing entity fields
+Add JPA annotations (`@Entity`, `@Table`, `@Id`, `@GeneratedValue`).
 
-#### Step 2.5: Create ProductController
+### Step 2.4: Create Inventory Repository
 
-- Map to `/api/v1/products` endpoints
-- Implement create (POST), get by ID (GET), list (GET), update (PATCH)
-- Add OpenAPI annotations (`@Operation`, `@Parameter`, `@ApiResponse`)
+**`InventoryRepository.java`** extends `JpaRepository<Inventory, UUID>` with:
 
-#### Step 2.6: Create Application Configuration
+- Custom method to check stock availability for a SKU
+- Method to find low stock items below threshold
+- Query methods for filtering by warehouse or quantity ranges
+
+### Step 2.5: Create DTOs
+
+**Request DTOs:**
+
+- `CreateInventoryRecordRequest` - For creating new inventory entries
+- `UpdateInventoryStockRequest` - For adjusting stock levels
+- `ReserveStockRequest` - For reserving quantities
+
+**Response DTOs:**
+
+- `InventoryRecordResponse` - Full inventory record for API responses
+- `StockAvailabilityResponse` - Stock status and availability check
+- `LowStockAlertResponse` - Low stock notification
+
+Add validation annotations where appropriate.
+
+### Step 2.6: Create InventoryController
+
+Map to `/api/v1/inventory` endpoints:
+
+- GET /inventory - List all inventory records (paginated)
+- GET /inventory/sku/{sku} - Get stock status for a SKU
+- POST /inventory - Create new inventory record
+- PUT /inventory/{id} - Update inventory record
+- PATCH /inventory/{id}/stock/adjust - Adjust stock level
+- POST /inventory/reserve - Reserve stock for order
+- GET /inventory/alerts/low - Get low stock alerts
+
+Add OpenAPI annotations (`@Operation`, `@Parameter`, `@ApiResponse`).
+
+### Step 2.7: Create Application Configuration
 
 - `application.properties` - Base configuration (server.port, datasource placeholders)
 - `application-local.properties` - Local development with PostgreSQL connection
 - No passwords in committed config; use environment variables or Jenkins secrets
 
-#### Step 2.7: Add Actuator Health Endpoint
+### Step 2.8: Add Flyway Migration for Inventory Service
 
-- Configure Spring Boot Actuator
-- Enable health check at `/actuator/health`
+**`V1__initial_inventory_schema.sql`** in `db/migration/`:
 
-#### Step 2.8: Create Initial Flyway Migration
+- Creates `inventory_records` table with all columns and constraints
+- Creates `stock_keeping_units` table
+- Adds unique index on SKU
+- Includes audit column defaults (createdAt, updatedAt)
+- Add trigger or view for available quantity computation if needed
 
-- `V1__initial_schema.sql` in `db/migration/`
-- Creates `products` table with all columns and constraints
-- Adds unique index on `sku`
-- Includes audit column defaults
+### Step 2.9: Create Unit Tests
 
-### Phase 3: Implement Tests
-
-#### Step 3.1: Unit Test for Product Repository (Milestone 0)
+**`InventoryRepositoryTest.java`:**
 
 ```java
 @SpringBootTest
-class ProductRepositoryTest {
+@ActiveProfiles("test")
+class InventoryRepositoryTest {
     @Autowired
-    private ProductRepository repository;
+    private InventoryRepository repository;
 
-    @Test
-    void should_save_product_with_unique_sku() {
-        // Create product with SKU "PROD-001"
-        // Verify repository saves successfully
-    }
+    // Test stock availability checks
+    // Test low stock detection
+    // Test CRUD operations
 }
 ```
 
-#### Step 3.2: Integration Test (Milestone 1+)
+Target: 100% domain layer coverage.
+
+### Step 2.10: Create Integration Tests
+
+**`InventoryServiceIntegrationTests.java`:**
 
 ```java
 @SpringBootTest
-@Testcontainers
-class CatalogServiceIntegrationTests {
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+@ActiveProfiles("test")
+class InventoryServiceIntegrationTests {
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
-    // Test REST endpoints against real PostgreSQL
+    // Test stock reservation logic
+    // Test concurrent stock adjustments (optimistic locking)
+    // Test low stock alerts
 }
 ```
 
-### Phase 4: Create Jenkinsfile (Initial)
+Target: 80%+ application layer coverage.
 
-#### Step 4.1: Declarative Pipeline
+### Step 2.11: Create ADR for Inventory Service Design
 
-```groovy
-pipeline {
-    agent any
+**`docs/adr/adr-002-inventory-service-selection.md`:**
 
-    stages {
-        stage('Checkout') { steps { checkout scm() } }
-        stage('Compile') { steps { sh 'mvn -B clean compile' } }
-        stage('Unit Tests') {
-            steps { sh 'mvn -B test' }
-            post { always { junit '**/target/surefire-reports/*.xml' } }
-        }
-        stage('Package') { steps { sh 'mvn -B package' } }
-    }
-
-    post {
-        success { archiveArtifacts artifacts: '**/catalog-service/target/*.jar' }
-        failure { echo 'Build failed. Check logs.' }
-        always { cleanWs() }
-    }
-}
-```
-
-#### Step 4.2: Configure Jenkins Agents
-
-- Create agent with `java` label (Maven, JDK 21)
-- Test pipeline manually before integrating with repository webhooks
-
-### Phase 5: Verification
-
-#### Step 5.1: Local Build Verification
-
-```bash
-cd /mnt/drive1/Projects/warehouse-fulfillment-platform
-mvn clean verify -pl services/catalog-service -am
-# Expected: BUILD SUCCESS
-```
-
-#### Step 5.2: Run Catalog Service Locally
-
-```bash
-cd services/catalog-service
-mvn spring-boot:run -pl . -am
-# Verify health endpoint at http://localhost:8080/actuator/health
-```
-
-#### Step 5.3: API Contract Test
-
-```bash
-curl -X POST http://localhost:8080/api/v1/products \
-  -H "Content-Type: application/json" \
-  -d '{"sku":"PROD-001","name":"Widget","unitOfMeasure":"pcs"}'
-# Expected: 201 Created with ProductResponse in body
-```
+- Rationale for separate Inventory Service vs monolithic design
+- Database schema decisions (separate tables vs single inventory table)
+- Concurrency strategy for stock updates
+- API contract definitions
 
 ---
 
-## Exit Criteria for Milestone 0
+## Phase 3: Create Jenkinsfile Updates (For Milestone 2)
 
-Before marking Milestone 0 complete:
+Update root `Jenkinsfile` to include catalog-service builds in multi-module pipeline.
 
-- [ ] `mvn clean verify -pl services/catalog-service -am` succeeds locally
+---
+
+## Exit Criteria for Milestone 2 (Inventory Service Basics)
+
+Before marking Milestone 2 complete, ensure all roadmap criteria below are implemented with their corresponding implementation steps added to the implementation checklist before using this checklist as the completion gate:
+
+### ✅ Implementation Steps (Roadmap)
+
+1. **Release Management**
+   - Implement versioning strategy for inventory records
+   - Add soft-delete capability with `deletedAt` audit field
+   - Create retention policies for archived inventory data
+
+2. **Idempotency**
+   - Add idempotency keys to stock adjustment endpoints
+   - Implement cache invalidation for stale inventory data
+   - Ensure concurrent requests don't cause duplicate operations
+
+3. **Concurrent Oversell Protection**
+   - Add optimistic locking with `@Version` annotation on inventory table
+   - Implement database-level row locks for critical stock operations
+   - Add retry logic for failed concurrent updates with exponential backoff
+
+4. **PostgreSQL Integration Tests**
+   - Replace H2 in-memory DB with Testcontainers PostgreSQL for integration tests
+   - Add schema validation tests against Flyway migrations
+   - Verify migration compatibility across PostgreSQL versions
+
+5. **Role Enforcement**
+   - Implement service-level security filters for inventory endpoints
+   - Add audit logging for stock adjustments and reservations
+   - Create role-based access control (RBAC) for admin vs operational users
+
+### Verification Checklist
+
+- [ ] `mvn clean verify -pl services/inventory-service -am` succeeds locally
 - [ ] Health endpoint returns `"status":"UP"` at `/actuator/health`
-- [ ] Product can be created via POST to `/api/v1/products`
-- [ ] Unit tests pass (`surefire-reports/` contains test results)
-- [ ] JAR artifact built in `catalog-service/target/catalog-service-0.1.0-SNAPSHOT.jar`
-- [ ] Jenkins pipeline runs successfully on CI
-- [ ] Documentation updated with build instructions
+- [ ] Inventory records can be created via POST to `/api/v1/inventory`
+- [ ] Stock availability check works: GET /inventory/sku/{sku}
+- [ ] Unit tests pass (surefire-reports/ contains test results)
+- [ ] Integration tests pass with Spring Boot context
+- [ ] JAR artifact built in `inventory-service/target/*.jar`
+- [ ] ADR documented architecture decisions
 
 ---
 
-## After Milestone 0: Begin Milestone 1
+## Exit Criteria for Milestone 1 (Current Session - Verified ✅)
 
-Upon successful completion of Milestone 0, proceed to implement Catalog Service business logic per `DEVELOPMENT_ROADMAP.md` section 4.
+Before marking current session complete:
+
+- [x] `mvn clean verify -pl services/catalog-service -am` succeeds locally
+- [x] All unit tests pass (3 tests in ProductRepositoryTest)
+- [x] All integration tests pass (4 tests in CatalogServiceIntegrationTests)
+- [x] Checkpoint files updated: COMPLETED_TASKS.md, CURRENT_STATE.md, NEXT_STEPS.md
+- [x] Graphify used for codebase analysis (graphify update executed)
 
 ---
 
-**Last Updated:** 2026-11-05
-**Current Session Status:** Environment assessment complete, awaiting approval for implementation
-**Next Action:** Await user approval to create root pom.xml and first service module
+## Session Status
+
+**Current Milestone:** Milestone 1 — COMPLETE (PR review fixes applied)
+**Build Status:** ✅ PASSING (Catalog Service verified - all PR comments addressed)
+**Graphify Usage:** ✅ Used for codebase analysis and graph update
+
+### PR Review Fixes Applied (codeRabbitAI comments):
+
+1. **H2 Database URL Stability** — Changed from `System.nanoTime()` to timestamp-based unique ID stored in static final field:
+
+   ```java
+   private static final String TESTDB_URL = "jdbc:h2:mem:testdb-" + System.currentTimeMillis() + "-" + Thread.currentThread().getId();
+   ```
+
+2. **Test Isolation for Active Product Count** — Added `repository.deleteAll()` at start of `should_find_all_active_products()` to ensure isolation from other tests (JUnit doesn't guarantee source-order execution).
+
+**Next Action:** PR ready to merge into develop branch. Awaiting instruction to proceed with Milestone 2 (Inventory Service) or review current state.
+
+---
+
+**Last Updated:** 2026-11-06 17:26 PKT
